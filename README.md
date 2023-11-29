@@ -1,7 +1,7 @@
 # Official implementation of "A Unified Framework for Multimodal, Multi-Part Human Motion Synthesis"
 
 
-### [Project Website](https://zixiangzhou916.github.io/UDE-2/)
+### [Arxiv](https://arxiv.org/abs/2311.16471) [Project Website](https://zixiangzhou916.github.io/UDE-2/)
 
 ---
 
