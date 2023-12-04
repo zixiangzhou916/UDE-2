@@ -29,3 +29,11 @@
 
 ## Code
 #### Coming soon
+
+## Citation
+@article{zhou2023unified, \
+$\qquad$   title={A Unified Framework for Multimodal, Multi-Part Human Motion Synthesis}, \
+$\qquad$   author={Zhou, Zixiang and Wan, Yu and Wang, Baoyuan}, \
+$\qquad$   journal={arXiv preprint arXiv:2311.16471}, \
+$\qquad$   year={2023} \
+}
