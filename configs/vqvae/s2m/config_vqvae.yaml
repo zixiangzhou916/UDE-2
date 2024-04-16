@@ -1,0 +1,142 @@
+data:
+  dataset:
+    base_dir: "../dataset/BEAT_v0.2.1/"
+    motion_dir: "../dataset/BEAT_v0.2.1/aligned"
+    window_size: 160
+    beat_id_list: [2,4,6,8]
+  
+  loader:
+    train:
+      dataset: 'BEATTokenizerDataset'
+      split:
+        s2m: train
+      split_path:
+        s2m: '../dataset/BEAT_v0.2.1/'
+      shuffle: true
+      workers: 8
+      batch_size: 32
+    vald:
+      dataset: 'BEATTokenizerDataset'
+      split_path: '../dataset/BEAT_v0.2.1/'
+      shuffle: true
+      split:
+        s2m: vald
+      split_path:
+        s2m: '../dataset/BEAT_v0.2.1/'
+      workers: 8
+      batch_size: 32
+    test:
+      dataset: 'BEATTokenizerDataset'
+      shuffle: true
+      split:
+        s2m: test
+      split_path:
+        s2m: '../dataset/BEAT_v0.2.1/'
+      workers: 8
+      batch_size: 32
+
+train:
+  num_epochs: 10  # default: 50
+  lr: 0.0001
+  step_lr: 20
+  gamma: 0.1
+  part_to_train: ["body"]  # train the codebook of specified body parts
+  save_per_epoch: 1
+  eval_per_epoch: 50
+  reset_per_epoch: 1
+  weight_decay: 0.0
+  strategy: two_stage  # 1) naive, 2) two_stage
+
+  checkpoints:
+    body: null
+    left: null
+    right: null
+
+eval:
+  strategy: two_stage  # 1) naive, 2) two_stage
+  checkpoints:
+    body: "logs/vqvae/s2m/exp4_one_stage/24-03-01-16-46-33/checkpoints/body_Tokenizer_E004.pth" # conv-trans, one-stage w/o re-init
+
+model:
+  body:
+    vq_encoder:
+      arch_path: '.ude.seqvq'
+      arch_name: 'VQEncoderV1'
+      input_size: 75
+      channels: [512, 512]
+      n_down: 2
+      hidden_dim: 2048
+      num_layers: 2
+      num_heads: 4
+      dropout: 0.1
+      activation: "gelu"
+    vq_decoder:
+      arch_path: '.ude.seqvq'
+      arch_name: 'VQDecoderV3'              # V1: Conv, V2: Conv + Transformer
+      input_size: 512
+      channels: [1024, 1024, 75]
+      n_resblk: 3
+      n_up: 2
+      hidden_dims: 2048
+      num_layers: 2
+      num_heads: 4
+      dropout: 0.1
+      activation: "gelu"
+    quantizer:
+      arch_path: '.ude.seqvq'
+      arch_name: 'Quantizer'
+      n_e: 1024     # number codes in the codebook
+      e_dim: 512   # dimension of each code
+      beta: 1.0
+  # left:
+  #   vq_encoder:
+  #     arch_path: '.ude.seqvq'
+  #     arch_name: 'VQEncoderV1'
+  #     input_size: 12
+  #     channels: [512, 512]
+  #     n_down: 2
+  #     hidden_dim: 1024
+  #     num_layers: 2
+  #     num_heads: 4
+  #     dropout: 0.1
+  #     activation: "gelu"
+  #   vq_decoder:
+  #     arch_path: '.ude.seqvq'
+  #     arch_name: 'VQDecoderV1'
+  #     input_size: 512
+  #     channels: [512, 256, 12]
+  #     n_resblk: 3
+  #     n_up: 2
+  #     activation: "gelu"
+  #   quantizer:
+  #     arch_path: '.ude.seqvq'
+  #     arch_name: 'Quantizer'
+  #     n_e: 512     # number codes in the codebook
+  #     e_dim: 512   # dimension of each code
+  #     beta: 1.0
+  # right:
+  #   vq_encoder:
+  #     arch_path: '.ude.seqvq'
+  #     arch_name: 'VQEncoderV1'
+  #     input_size: 12
+  #     channels: [512, 512]
+  #     n_down: 2
+  #     hidden_dim: 1024
+  #     num_layers: 2
+  #     num_heads: 4
+  #     dropout: 0.1
+  #     activation: "gelu"
+  #   vq_decoder:
+  #     arch_path: '.ude.seqvq'
+  #     arch_name: 'VQDecoderV1'
+  #     input_size: 512
+  #     channels: [512, 256, 12]
+  #     n_resblk: 3
+  #     n_up: 2
+  #     activation: "gelu"
+  #   quantizer:
+  #     arch_path: '.ude.seqvq'
+  #     arch_name: 'Quantizer'
+  #     n_e: 512     # number codes in the codebook
+  #     e_dim: 512   # dimension of each code
+  #     beta: 1.0

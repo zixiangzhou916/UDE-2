@@ -1,0 +1,85 @@
+data:
+  dataset:
+    base_dir: "../dataset/HumanML3D/"
+    amass_motion_dir: "../dataset/HumanML3D/joints_smpl_reorg"
+    aist_motion_dir: "../dataset/AIST++/pose_data_smpl_aist_reorg_full"
+    beat_motion_dir: "../dataset/BEAT_v0.2.1/aligned_20230331"
+    window_size: 200
+  
+  loader:
+    train:
+      dataset: 'MotionAutoEncoderDataset'
+      split:
+        t2m: train
+        a2m: train
+        s2m: train
+      split_path:
+        t2m: ../dataset/HumanML3D/
+        a2m: ../dataset/AIST++/
+        s2m: ../dataset/BEAT_v0.2.1/
+      shuffle: true
+      workers: 8
+      batch_size: 32
+    vald:
+      dataset: 'MotionAutoEncoderDataset'
+      shuffle: true
+      split:
+        t2m: val
+        a2m: val
+        s2m: vald
+      split_path:
+        t2m: ../dataset/HumanML3D/
+        a2m: ../dataset/AIST++/
+        s2m: ../dataset/BEAT_v0.2.1/
+      workers: 8
+      batch_size: 32
+    test:
+      dataset: 'MotionAutoEncoderDataset'
+      shuffle: true
+      split:
+        t2m: test
+        a2m: test
+        s2m: test
+      split_path:
+        t2m: ../dataset/HumanML3D/
+        a2m: ../dataset/AIST++/
+        s2m: ../dataset/BEAT_v0.2.1/
+      workers: 0
+      batch_size: 1
+
+train:
+  num_epochs: 1000
+  lr: 0.0001
+  step_lr: 400
+  gamma: 0.1
+
+  save_per_epoch: 100
+  eval_per_epoch: 100
+  log_per_step: 50
+
+  checkpoint: "logs/perception/vae/pretrained/best.pth"
+
+model:
+
+  encoder:
+    arch_path: '.perception.motion_vae.model'
+    arch_name: MotionEncoderV1
+    
+    d_input: 75
+    d_model: 512
+    d_inner: 768
+    n_head: 8
+    n_layer: 6
+    dropout: 0.1
+    activation: "gelu"
+
+  decoder:
+    arch_path: '.perception.motion_vae.model'
+    arch_name: MotionDecoderV1 # 
+    d_input: 75
+    d_model: 512
+    d_inner: 768
+    n_head: 8
+    n_layer: 6
+    dropout: 0.1
+    activation: "gelu"

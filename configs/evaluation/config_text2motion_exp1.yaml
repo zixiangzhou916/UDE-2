@@ -1,0 +1,114 @@
+data:
+  dataset:
+    t2m_base_dir: ../dataset/HumanML3D/
+    t2m_max_text_len: 30
+    t2m_motion_dir: ../dataset/HumanML3D/joints_smpl_reorg
+    t2m_txt_end_idx: 1
+    t2m_txt_pad_idx: 4199
+    t2m_txt_start_idx: 0    
+    text_dir: ../dataset/HumanML3D/texts/
+    window_size:
+      t2m: 200
+    modality: ["t2m"]
+
+  loader:
+    train:
+      dataset: Text2MotionAlignmentDataset
+      shuffle: true
+      split:
+        t2m: train
+      split_path:
+        t2m: ../dataset/HumanML3D/
+      workers: 8
+      batch_size: 64
+    vald:
+      dataset: Text2MotionAlignmentDataset
+      shuffle: false
+      split:
+        t2m: val
+      split_path:
+        t2m: ../dataset/HumanML3D/
+      workers: 8
+      batch_size: 64
+    test:
+      dataset: Text2MotionAlignmentDataset
+      shuffle: false
+      split:
+        t2m: test
+      split_path:
+        t2m: ../dataset/HumanML3D/
+      workers: 0
+      batch_size: 1
+
+train:
+  num_epochs: 1000
+  lr: 0.0001
+  step_lr: 200
+  gamma: 0.5
+  weight_decay: 0.00001
+  save_per_epoch: 100
+  eval_per_epoch: 100
+  checkpoint: logs/perception/text2motion_sync/exp3/23-10-26-07-03-38/checkpoints/T2M_Sync_E100.pth
+
+eval:
+  repeat_times: 3
+  num_results: 100
+  checkpoint: logs/perception/text2motion_sync/exp3/23-10-26-07-03-38/checkpoints/T2M_Sync_E100.pth
+
+losses:
+  rc: 1.0
+  kl: 0.0001
+  cs: 1.0     # cross-domain similarity
+  is: 1.0     # intra-domain similarity
+  nce: 1.0
+
+model:
+  arch_path: '.evaluation.align_text2motion_model'
+  arch_name: 'Text2MotionAlignmentV1'
+
+  bert:
+    tokenizer: networks/BERT/sentence-transformers/all-MiniLM-L6-v2
+    model: networks/BERT/sentence-transformers/all-MiniLM-L6-v2
+
+  motion_encoder:
+    arch_path: '.perception.motion_vae.model'
+    arch_name: MotionEncoderV1
+    checkpoint: "logs/perception/vae/exp1/pretrained-1027/checkpoints/MotionVAE_final.pth"
+    d_input: 75
+    d_model: 512
+    d_inner: 768
+    n_head: 8
+    n_layer: 6
+    dropout: 0.1
+    activation: "gelu"
+  
+  motion_decoder:
+    arch_path: '.perception.motion_vae.model'
+    arch_name: MotionDecoderV1 # 
+    checkpoint: "logs/perception/vae/exp1/pretrained-1027/checkpoints/MotionVAE_final.pth"
+    d_input: 75
+    d_model: 512
+    d_inner: 768
+    n_head: 8
+    n_layer: 6
+    dropout: 0.1
+    activation: "gelu"
+
+  text_encoder:
+    arch_path: '.ude.clip_model'
+    arch_name: 'CLIP'
+    model_name: "openai/clip-vit-base-patch32"
+    conf_cache_dir: "networks/ude/pretrained-model/openai/clip-vit-base-patch32/conf/"
+    tokenizer_cache_dir: "networks/ude/pretrained-model/openai/clip-vit-base-patch32/tokenizer/"
+    model_cache_dir: "networks/ude/pretrained-model/openai/clip-vit-base-patch32/model/"
+    print_model: false
+    padding_len: 77
+    mask_padded: true
+
+  trainable:
+    text:
+      arch_path: '.evaluation.align_text2motion_model'
+      arch_name: 'TextProjectorV1'
+      d_input: 512
+      d_model: 1024
+      d_output: 512

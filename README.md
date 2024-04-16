@@ -1,7 +1,7 @@
 # Official implementation of "A Unified Framework for Multimodal, Multi-Part Human Motion Synthesis"
 
 
-### [Arxiv](https://arxiv.org/abs/2311.16471) | [Project Website](https://zixiangzhou916.github.io/UDE-2/)
+### [Project Website](https://zixiangzhou916.github.io/UDE-2/)
 
 ---
 
@@ -28,12 +28,4 @@
 
 
 ## Code
-#### Coming soon
-
-## Citation
-@article{zhou2023unified, \
-$\qquad$   title={A Unified Framework for Multimodal, Multi-Part Human Motion Synthesis}, \
-$\qquad$   author={Zhou, Zixiang and Wan, Yu and Wang, Baoyuan}, \
-$\qquad$   journal={arXiv preprint arXiv:2311.16471}, \
-$\qquad$   year={2023} \
-}
+#### Comming soon

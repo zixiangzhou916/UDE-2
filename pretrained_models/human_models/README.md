@@ -1,0 +1,1 @@
+put SMPL, SMPL-X, and MANO models here.

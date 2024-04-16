@@ -1,0 +1,22 @@
+[
+    {
+        "file": "demo_inputs/s2m/2_scott_0_1_1.wav", 
+        "emotion": "neutral", 
+        "speaker": "scott"
+    },
+    {
+        "file": "demo_inputs/s2m/4_lawrence_0_1_1.wav", 
+        "emotion": "neutral", 
+        "speaker": "lawrence"
+    }, 
+    {
+        "file": "demo_inputs/s2m/6_carla_0_1_1.wav", 
+        "emotion": "neutral", 
+        "speaker": "carla"
+    }, 
+    {
+        "file": "demo_inputs/s2m/8_catherine_0_1_1.wav", 
+        "emotion": "neutral", 
+        "speaker": "catherine"
+    }
+]

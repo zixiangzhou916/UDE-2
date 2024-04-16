@@ -1,0 +1,84 @@
+data:
+  dataset:
+    base_dir: "../dataset/AIST++/"
+    motion_dir: "../dataset/AIST++/pose_data_smpl_aist_reorg_full"
+    window_size: 40
+  
+  loader:
+    train:
+      dataset: 'AISTPPTokenizerDataset'
+      split:
+        a2m: train
+      split_path:
+        a2m: ../dataset/AIST++/
+      shuffle: true
+      workers: 8
+      batch_size: 128
+    vald:
+      dataset: 'AISTPPTokenizerDataset'
+      split_path: '../dataset/AIST++/'
+      shuffle: true
+      split:
+        a2m: val
+      split_path:
+        a2m: ../dataset/AIST++/
+      workers: 8
+      batch_size: 128
+    test:
+      dataset: 'AISTPPTokenizerDataset'
+      shuffle: true
+      split:
+        a2m: test
+      split_path:
+        a2m: ../dataset/AIST++/
+      workers: 8
+      batch_size: 32
+
+train:
+  num_epochs: 50
+  lr: 0.0001
+  step_lr: 200
+  gamma: 0.1
+  part_to_train: ["body"]  # train the codebook of specified body parts
+  save_per_epoch: 1
+  eval_per_epoch: 1
+  reset_per_epoch: 1
+  weight_decay: 0.0
+  strategy: two_stage  # 1) naive, 2) two_stage
+
+  checkpoints:
+    body: null
+
+eval:
+  strategy: two_stage  # 1) naive, 2) two_stage
+  checkpoints:
+    body: "logs/vqvae/a2m/exp1/pretrained-1029/checkpoints/best_1029.pth" # conv-conv
+
+model:
+  body:
+    vq_encoder:
+      arch_path: '.ude.seqvq'
+      arch_name: 'VQEncoderV1'
+      input_size: 75
+      channels: [512, 512]
+      n_down: 2
+      hidden_dim: 2048
+      num_layers: 2
+      num_heads: 4
+      dropout: 0.1
+      activation: "gelu"
+    vq_decoder:
+      arch_path: '.ude.seqvq'
+      arch_name: 'VQDecoderV2'
+      input_size: 512
+      channels: [1024, 1024, 75]
+      n_resblk: 3
+      n_up: 2
+      activation: "gelu"
+
+    quantizer:
+      arch_path: '.ude.seqvq'
+      arch_name: 'Quantizer'
+      n_e: 1024     # number codes in the codebook
+      e_dim: 512   # dimension of each code
+      beta: 1.0

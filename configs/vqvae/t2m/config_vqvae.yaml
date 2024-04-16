@@ -1,0 +1,87 @@
+data:
+  dataset:
+    base_dir: "../dataset/HumanML3D/"
+    motion_dir: "../dataset/HumanML3D/joints_smpl_reorg"
+    window_size: 40
+  
+  loader:
+    train:
+      dataset: 'HumanML3DTokenizerDataset'
+      split:
+        t2m: train
+      split_path:
+        t2m: ../dataset/HumanML3D/
+      shuffle: true
+      workers: 8
+      batch_size: 128
+    vald:
+      dataset: 'HumanML3DTokenizerDataset'
+      split_path: '../dataset/HumanML3D/'
+      shuffle: true
+      split:
+        t2m: val
+      split_path:
+        t2m: ../dataset/HumanML3D/
+      workers: 8
+      batch_size: 128
+    test:
+      dataset: 'HumanML3DTokenizerDataset'
+      shuffle: true
+      split:
+        t2m: test
+      split_path:
+        t2m: ../dataset/HumanML3D/
+      workers: 8
+      batch_size: 32
+
+train:
+  num_epochs: 50  # Default: 50
+  lr: 0.0001
+  step_lr: 200
+  gamma: 0.1
+  part_to_train: ["body"]  # train the codebook of specified body parts
+  save_per_epoch: 1
+  eval_per_epoch: 1
+  reset_per_epoch: 1
+  weight_decay: 0.0
+  strategy: two_stage  # 1) naive, 2) two_stage
+
+  checkpoints:
+    # body: "logs/vqvae/t2m/exp1/pretrained-1026/checkpoints/body_Tokenizer_E000.pth" # conv-conv
+    body: null
+
+eval:
+  strategy: two_stage  # 1) naive, 2) two_stage
+  checkpoints:
+    body: "logs/vqvae/t2m/exp1/pretrained-1028/checkpoints/best_1027.pth" # conv-conv, w/ re-init
+    # body: "logs/vqvae/t2m/exp1_wo_reinit/pretrained-1105/checkpoints/body_Tokenizer_E010.pth"  # w/o re-init
+    # body: "logs/vqvae/t2m/exp1_one_stage/pretrained-1105/checkpoints/body_Tokenizer_final.pth"  # one-stage
+
+model:
+  body:
+    vq_encoder:
+      arch_path: '.ude.seqvq'
+      arch_name: 'VQEncoderV1'
+      input_size: 75
+      channels: [512, 512]
+      n_down: 2
+      hidden_dim: 2048
+      num_layers: 2
+      num_heads: 4
+      dropout: 0.1
+      activation: "gelu"
+    vq_decoder:
+      arch_path: '.ude.seqvq'
+      arch_name: 'VQDecoderV2'
+      input_size: 512
+      channels: [1024, 1024, 75]
+      n_resblk: 3
+      n_up: 2
+      activation: "gelu"
+
+    quantizer:
+      arch_path: '.ude.seqvq'
+      arch_name: 'Quantizer'
+      n_e: 1024     # number codes in the codebook
+      e_dim: 512   # dimension of each code
+      beta: 1.0

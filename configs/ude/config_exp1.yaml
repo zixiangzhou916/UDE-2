@@ -1,0 +1,417 @@
+data:
+  dataset:
+    t2m_base_dir: ../../dataset/HumanML3D/
+    t2m_max_text_len: 30
+    t2m_motion_dir: ../../dataset/HumanML3D/joints_smpl_reorg
+    t2m_txt_end_idx: 1
+    t2m_txt_pad_idx: 4199
+    t2m_txt_start_idx: 0
+
+    a2m_base_dir: ../../dataset/AIST++/
+    a2m_motion_dir: ../../dataset/AIST++/aligned
+    
+    s2m_base_dir: ../../dataset/BEAT_v0.2.1/
+    s2m_motion_dir: ../../dataset/BEAT_v0.2.1/aligned_20230331
+    beat_id_list: [2,4,6,8]
+    beat_vocab_dir: dataloader/ude/beat_tokenizer.json
+    
+    text_dir: ../../dataset/HumanML3D/texts/
+    variable_lengths: false  # If True, we are using variable lengths for HumanML3D, default: False
+    times: 1
+    window_size:
+      a2m: 160
+      s2m: 160
+      t2m: 200
+    modality: ["t2m", "a2m", "s2m"]
+
+    suffix_prompts: dataset/ude_v2/suffix_prompts.json
+
+  loader:
+    train:
+      dataset: UDEDataset
+      shuffle: true
+      split:
+        a2m: train
+        s2m: train
+        t2m: train
+      split_path:
+        a2m: ../dataset/AIST++/
+        s2m: ../dataset/BEAT_v0.2.1/
+        t2m: ../dataset/HumanML3D/
+      workers: 8
+      batch_size: 32
+    vald:
+      dataset: UDEDataset
+      shuffle: false
+      split:
+        a2m: val
+        s2m: vald
+        t2m: val
+      split_path:
+        a2m: ../dataset/AIST++/
+        s2m: ../dataset/BEAT_v0.2.1/
+        t2m: ../dataset/HumanML3D/
+      workers: 8
+      batch_size: 32
+    test:
+      dataset: UDEDatasetEval
+      shuffle: false
+      split:
+        a2m: test_all
+        s2m: "test"
+        t2m: test
+      split_path:
+        a2m: ../dataset/AIST++/
+        s2m: ../dataset/BEAT_v0.2.1/
+        t2m: ../dataset/HumanML3D/
+      workers: 0
+      batch_size: 1
+
+train:
+  num_epochs: 1000       # Dubug
+  weight_decay: 0.00001
+  gamma: 0.1
+  step_lr: 1000
+  lr: 0.00001
+  model_to_train: ["ude"]
+  part_to_train: ["body", "left", "right"]
+  eval_per_epoch: 100   # Evaluate every N epoch
+  save_per_epoch: 50    # Save model every N epoch
+  log_per_step: 10      # Log training info every N steps
+  monitor_per_step: 100 # Log monitoring info every N steps
+
+  semantic_enhancement:
+    t2m: true
+    a2m: true
+    s2m: true
+
+  checkpoints:
+    vqvae:
+      t2m:
+        body: pretrained_models/vqvae/t2m/vqvae_best.pth
+      a2m:
+        body: pretrained_models/vqvae/a2m/vqvae_best.pth
+      s2m:
+        body: pretrained_models/vqvae/s2m/vqvae_body_best.pth
+        left: pretrained_models/vqvae/s2m/vqvae_left_best.pth
+        right: pretrained_models/vqvae/s2m/vqvae_right_best.pth
+    ude: pretrained_models/ude2/ude2_best.pth
+    perception:
+      all: pretrained_models/perception/motionvae_best.pth
+
+eval:
+  checkpoints:
+    vqvae:
+      t2m:
+        body: pretrained_models/vqvae/t2m/vqvae_best.pth
+      a2m:
+        body: pretrained_models/vqvae/a2m/vqvae_best.pth
+      s2m:
+        body: pretrained_models/vqvae/s2m/vqvae_body_best.pth
+        left: pretrained_models/vqvae/s2m/vqvae_left_best.pth
+        right: pretrained_models/vqvae/s2m/vqvae_right_best.pth
+    ude: pretrained_models/ude2/ude2_best.pth
+
+lambdas:
+  tasks:
+    t2m: 1.0
+    a2m: 1.0
+    s2m: 1.0
+  semantic_enhancement:
+    sem_enh_1: 1.0
+    sem_enh_2: 0.0
+
+model:
+  vqvae:
+    t2m:
+      body:
+        vqencoder:
+          arch_path: '.ude.seqvq'
+          arch_name: 'VQEncoderV1'
+          input_size: 75
+          channels: [512, 512]
+          n_down: 2
+          hidden_dim: 2048
+          num_layers: 2
+          num_heads: 4
+          dropout: 0.1
+          activation: "gelu"
+        vqdecoder:
+          arch_path: '.ude.seqvq'
+          arch_name: 'VQDecoderV2'
+          input_size: 512
+          channels: [1024, 1024, 75]
+          n_resblk: 3
+          n_up: 2
+          activation: "gelu"
+        quantizer:
+          arch_path: '.ude.seqvq'
+          arch_name: 'Quantizer'
+          n_e: 1024     # number codes in the codebook
+          e_dim: 512   # dimension of each code
+          beta: 1.0
+    a2m:
+      body:
+        vqencoder:
+          arch_path: '.ude.seqvq'
+          arch_name: 'VQEncoderV1'
+          input_size: 75
+          channels: [512, 512]
+          n_down: 2
+          hidden_dim: 2048
+          num_layers: 2
+          num_heads: 4
+          dropout: 0.1
+          activation: "gelu"
+        vqdecoder:
+          arch_path: '.ude.seqvq'
+          arch_name: 'VQDecoderV2'
+          input_size: 512
+          channels: [1024, 1024, 75]
+          n_resblk: 3
+          n_up: 2
+          activation: "gelu"
+        quantizer:
+          arch_path: '.ude.seqvq'
+          arch_name: 'Quantizer'
+          n_e: 1024     # number codes in the codebook
+          e_dim: 512   # dimension of each code
+          beta: 1.0
+    s2m:
+      body:
+        vqencoder:
+          arch_path: '.ude.seqvq'
+          arch_name: 'VQEncoderV1'
+          input_size: 75
+          channels: [512, 512]
+          n_down: 2
+          hidden_dim: 2048
+          num_layers: 2
+          num_heads: 4
+          dropout: 0.1
+          activation: "gelu"
+        vqdecoder:
+          arch_path: '.ude.seqvq'
+          arch_name: 'VQDecoderV3'              # V1: Conv, V2: Conv + Transformer
+          input_size: 512
+          channels: [1024, 1024, 75]
+          n_resblk: 3
+          n_up: 2
+          hidden_dims: 2048
+          num_layers: 2
+          num_heads: 4
+          dropout: 0.1
+          activation: "gelu"
+        quantizer:
+          arch_path: '.ude.seqvq'
+          arch_name: 'Quantizer'
+          n_e: 1024     # number codes in the codebook
+          e_dim: 512   # dimension of each code
+          beta: 1.0
+      left:
+        vqencoder:
+          arch_path: '.ude.seqvq'
+          arch_name: 'VQEncoderV1'
+          input_size: 12
+          channels: [512, 512]
+          n_down: 2
+          hidden_dim: 1024
+          num_layers: 2
+          num_heads: 4
+          dropout: 0.1
+          activation: "gelu"
+        vqdecoder:
+          arch_path: '.ude.seqvq'
+          arch_name: 'VQDecoderV1'
+          input_size: 512
+          channels: [512, 256, 12]
+          n_resblk: 3
+          n_up: 2
+          activation: "gelu"
+        quantizer:
+          arch_path: '.ude.seqvq'
+          arch_name: 'Quantizer'
+          n_e: 512     # number codes in the codebook
+          e_dim: 512   # dimension of each code
+          beta: 1.0
+      right:
+        vqencoder:
+          arch_path: '.ude.seqvq'
+          arch_name: 'VQEncoderV1'
+          input_size: 12
+          channels: [512, 512]
+          n_down: 2
+          hidden_dim: 1024
+          num_layers: 2
+          num_heads: 4
+          dropout: 0.1
+          activation: "gelu"
+        vqdecoder:
+          arch_path: '.ude.seqvq'
+          arch_name: 'VQDecoderV1'
+          input_size: 512
+          channels: [512, 256, 12]
+          n_resblk: 3
+          n_up: 2
+          activation: "gelu"
+        quantizer:
+          arch_path: '.ude.seqvq'
+          arch_name: 'Quantizer'
+          n_e: 512     # number codes in the codebook
+          e_dim: 512   # dimension of each code
+          beta: 1.0
+  ude:
+    arch_name: UDEModel
+    arch_path: .ude.ude_model
+    d_embed: 512
+    trainable: []
+    pretrained: 
+      text_encoder:   # CLIP (hugginface)
+        arch_path: '.ude.clip_model'
+        arch_name: 'CLIP'
+        model_name: "openai/clip-vit-base-patch32"
+        conf_cache_dir: "pretrained_models/openai/clip-vit-base-patch32/conf/"
+        tokenizer_cache_dir: "pretrained_models/openai/clip-vit-base-patch32/tokenizer/"
+        model_cache_dir: "pretrained_models/openai/clip-vit-base-patch32/model/"
+        print_model: false
+        padding_len: 77
+        mask_padded: true
+      audio_encoder:
+        arch_name: MTR
+        arch_path: .ude.music_encoder
+        model: pretrained_models/music-text-representation/model/best.pth
+        sr: 16000
+        n_fft: 1024
+        win_length: 1024
+        mel_dim: 128
+        duration: 9.91
+        attention_ndim: 256
+        mix_type: cf
+        audio_rep: mel
+        attention_nlayers: 4
+        attention_ndim: 256
+      speech_encoder:
+        arch_name: HuBERT
+        arch_path: .ude.hubert_model
+        model_name: "facebook/hubert-large-ls960-ft"
+        model_cache_dir: "pretrained_models/hubert-large-ls960-ft/model/"
+        preprocessor_cache_dir: "pretrained_models/hubert-large-ls960-ft/preprocessor/"
+        print: False
+    encoder:
+      arch_path: '.ude.cond_transformer'
+      arch_name: 'EncoderModel'
+      max_seq_length: 128
+      d_audio: 256
+      d_text: 512     # CLIP: 512, BERT: 768
+      d_speech: 1024
+      d_word: 512
+      n_emo: 8
+      n_ids: 30
+      d_model: 512
+      d_inner: 1024
+      n_head: 8
+      n_layers: 8
+      dropout: 0.1
+    decoder:
+      d_model: 512
+      d_latent: 512
+      n_mlp: 1
+      l_latent: 1
+    gpt:
+      arch_name: CrossCondGPT
+      arch_path: .ude.cross_cond_gpt
+      gpt_base:
+        arch_name: CrossCondGPTBase
+        arch_path: .ude.cross_cond_gpt
+        d_ids_model: 512
+        d_cond_model: 512
+        d_latent: 512
+        n_tokens: 4097  # 1024(t2m) + 1024(a2m) + 1024(s2m) + 512(s2m-left) + 512(s2m-right) + 1<SOS>
+        n_positions: 1024
+        drop: 0.1
+        block_size: 160
+        attn_pdrop: 0.1
+        resid_pdrop: 0.1
+        n_layers: 6
+        n_head: 8
+      gpt_head:
+        t2m:
+          body:
+            arch_path: '.ude.cross_cond_gpt'
+            arch_name: 'CrossCondGPTHead'
+            d_model: 512
+            d_latent: 512
+            n_tokens: 1027  # 1024 + 3
+            n_positions: 1024
+            drop: 0.1
+            block_size: 160
+            attn_pdrop: 0.1
+            resid_pdrop: 0.1
+            n_layers: 2
+            n_head: 8
+        a2m:
+          body:
+            arch_path: '.ude.cross_cond_gpt'
+            arch_name: 'CrossCondGPTHead'
+            d_model: 512
+            d_latent: 512
+            n_tokens: 1027  # 1024 + 3
+            n_positions: 1024
+            drop: 0.1
+            block_size: 160
+            attn_pdrop: 0.1
+            resid_pdrop: 0.1
+            n_layers: 2
+            n_head: 8
+        s2m:
+          body:
+            arch_path: '.ude.cross_cond_gpt'
+            arch_name: 'CrossCondGPTHead'
+            d_model: 512
+            d_latent: 512
+            n_tokens: 1027  # 1024 + 3
+            n_positions: 1024
+            drop: 0.1
+            block_size: 160
+            attn_pdrop: 0.1
+            resid_pdrop: 0.1
+            n_layers: 2
+            n_head: 8
+          left:
+            arch_path: '.ude.cross_cond_gpt'
+            arch_name: 'CrossCondGPTHead'
+            d_model: 512
+            d_latent: 512
+            n_tokens: 1027  # 1024 + 3
+            n_positions: 1024
+            drop: 0.1
+            block_size: 160
+            attn_pdrop: 0.1
+            resid_pdrop: 0.1
+            n_layers: 2
+            n_head: 8
+          right:
+            arch_path: '.ude.cross_cond_gpt'
+            arch_name: 'CrossCondGPTHead'
+            d_model: 512
+            d_latent: 512
+            n_tokens: 1027  # 1024 + 3
+            n_positions: 1024
+            drop: 0.1
+            block_size: 160
+            attn_pdrop: 0.1
+            resid_pdrop: 0.1
+            n_layers: 2
+            n_head: 8
+    print_model: false
+  perception:
+    all:
+      arch_path: '.perception.motion_vae.model'
+      arch_name: MotionEncoderV1
+      d_input: 75
+      d_model: 512
+      d_inner: 768
+      n_head: 8
+      n_layer: 6
+      dropout: 0.1
+      activation: "gelu"
