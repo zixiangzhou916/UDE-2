@@ -28,4 +28,5 @@
 
 
 ## Code
-#### Comming soon
+#### &#x2611; Demo code and sample data are released!
+#### &#x2610; Upload pretrained checkpoints
