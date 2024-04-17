@@ -27,6 +27,33 @@
 - Introduce semantic-aware sampling to improve condition consistency while maintaining synthesis diversity.
 
 
-## Code
+## TODO
 #### ✅ Demo code and sample data are released!
-#### ⬜ Upload pretrained checkpoints
+#### ✅ Upload pretrained checkpoints
+
+## Play with our sample data
+#### Prepare pretrained weights, you can download the weights from [here](https://drive.google.com/drive/folders/1xNDjrRVKBU3_lY08eYNzstrI89vOxGqZ?usp=sharing). After downloading, please unzip the files, the weights will be placed under
+    -- pretrained_models
+        |-- evaluation
+        |-- human_models
+        |-- perception
+        |-- ude2
+        |-- vqvae
+
+#### You also need to download the pretrained CLIP weights from [CLIP](https://huggingface.co/openai/clip-vit-base-patch32/tree/main) and place them under
+    -- pretrained_models
+        |-- openai/clip-vit-base-patch32/conf
+        |-- openai/clip-vit-base-patch32/tokenizer
+        |-- openai/clip-vit-base-patch32/model
+
+#### Download the pretrained hubert weights from [HuBERT](https://huggingface.co/facebook/hubert-large-ls960-ft/tree/main) and place them under
+    -- pretrained_models
+        |-- hubert-large-ls960-ft/model
+        |-- hubert-large-ls960-ft/preprocessor
+
+#### Download the music-text-representation weights from [MTR](https://github.com/seungheondoh/music-text-representation) and place the best.pth model under
+    -- pretrained_models
+        |-- music-text-representation/model/best.pth
+
+#### Run the demo
+    TODO
