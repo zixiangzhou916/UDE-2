@@ -28,8 +28,9 @@
 
 
 ## TODO
-#### ✅ Demo code and sample data are released!
-#### ✅ Upload pretrained checkpoints
+#### ✅ Release the demo code.
+#### ✅ Release the pretrained weights.
+#### ⬜ Release the training and evaluation code.
 
 ## Play with our sample data
 #### Prepare pretrained weights, you can download the weights from [here](https://drive.google.com/drive/folders/1xNDjrRVKBU3_lY08eYNzstrI89vOxGqZ?usp=sharing). After downloading, please unzip the files, the weights will be placed under
